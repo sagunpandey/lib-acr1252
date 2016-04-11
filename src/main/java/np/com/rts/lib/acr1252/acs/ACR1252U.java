@@ -1,6 +1,7 @@
 package np.com.rts.lib.acr1252.acs;
 
 import np.com.rts.lib.acr1252.pcsc.PcscReader;
+import np.com.rts.lib.acr1252.utility.Helper;
 
 import java.util.Arrays;
 
@@ -651,6 +652,58 @@ public class ACR1252U extends PcscReader {
       }
 
       return rawPollingSetting;
+    }
+  }
+
+  public void setSerialNumber(byte[] serialNumber) throws Exception {
+    byte[] uResponse;
+    byte[] uCommand = new byte[]{(byte) 0xE0, 0x00, 0x00, (byte) 0xDA, (byte) serialNumber.length};
+    byte[] apdu = Helper.appendArrays(uCommand, serialNumber);
+
+    sendControlCommand(apdu);
+    uResponse = getControlResponse();
+
+    if (uResponse[0] != (byte) 0xE1) {
+      throw new Exception("Set Serial Number Failed");
+    }
+  }
+
+  public byte[] readSerialNumber() throws Exception {
+    byte[] uResponse;
+    byte[] uCommand = new byte[]{(byte) 0xE0, 0x00, 0x00, 0x33, 0x00};
+
+    sendControlCommand(uCommand);
+    uResponse = getControlResponse();
+
+    if (uResponse[0] != (byte) 0xE1) {
+      throw new Exception("Read Serial Number Failed");
+    }
+
+    return Arrays.copyOfRange(uResponse, 5, uResponse.length);
+  }
+
+  public void setAndLockSerialNumber(byte[] serialNumber) throws Exception {
+    byte[] uResponse;
+    byte[] uCommand = new byte[]{(byte) 0xE0, 0x00, 0x00, (byte) 0xD9, (byte) serialNumber.length};
+    byte[] apdu = Helper.appendArrays(uCommand, serialNumber);
+
+    sendControlCommand(apdu);
+    uResponse = getControlResponse();
+
+    if (uResponse[0] != (byte) 0xE1) {
+      throw new Exception("Set and Lock Serial Number Failed");
+    }
+  }
+
+  public void unlockSerialNumber() throws Exception {
+    byte[] uResponse;
+    byte[] uCommand = new byte[]{(byte) 0xE0, 0x00, 0x00, 0x3E, 0x00};
+
+    sendControlCommand(uCommand);
+    uResponse = getControlResponse();
+
+    if (uResponse[0] != (byte) 0xE1) {
+      throw new Exception("Unlock Serial Number Failed");
     }
   }
 }
